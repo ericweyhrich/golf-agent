@@ -1,4 +1,5 @@
 import { RED_TAIL_COURSE } from '../data/courseData';
+import { ShotMap } from './ShotMap';
 
 export function RoundSummary({ round, onNewRound, onViewRound }) {
   const { holes, setup, completedAt } = round;
@@ -325,6 +326,9 @@ export function RoundSummary({ round, onNewRound, onViewRound }) {
             </div>
           </div>
         </div>
+
+        {/* Shot Map */}
+        <ShotMap holes={holes} />
 
         <div className="scorecard-table">
           <h3>Scorecard</h3>

@@ -31,9 +31,15 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate }) {
   const currentShot = shots[currentShotIndex] || {};
   const shotNumber = currentShotIndex + 1;
 
-  const gps = useGPS((distance) => {
-    updateCurrentShot('endGPS', distance);
-  });
+  const gps = useGPS(
+    (distance) => {
+      updateCurrentShot('endGPS', distance);
+    },
+    (endPos) => {
+      updateCurrentShot('gpsLat', endPos.lat);
+      updateCurrentShot('gpsLon', endPos.lon);
+    }
+  );
 
   const updateCurrentShot = (field, value) => {
     const newShots = [...shots];

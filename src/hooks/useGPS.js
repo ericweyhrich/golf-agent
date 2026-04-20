@@ -16,11 +16,12 @@ export function calculateDistance(lat1, lon1, lat2, lon2) {
   return Math.round(distance);
 }
 
-export function useGPS(onDistanceCalculated) {
+export function useGPS(onDistanceCalculated, onEndPositionCaptured) {
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState(null);
   const [startPosition, setStartPosition] = useState(null);
   const [startTime, setStartTime] = useState(null);
+  const [endPosition, setEndPosition] = useState(null);
 
   const startGPS = async () => {
     setGpsLoading(true);
@@ -135,8 +136,19 @@ export function useGPS(onDistanceCalculated) {
             position.coords.longitude
           );
 
+          const endPos = {
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+          };
+
+          setEndPosition(endPos);
+
           if (onDistanceCalculated) {
             onDistanceCalculated(distance);
+          }
+
+          if (onEndPositionCaptured) {
+            onEndPositionCaptured(endPos);
           }
 
           setStartPosition(null);
@@ -174,8 +186,19 @@ export function useGPS(onDistanceCalculated) {
             bestPosition.coords.longitude
           );
 
+          const endPos = {
+            lat: bestPosition.coords.latitude,
+            lon: bestPosition.coords.longitude,
+          };
+
+          setEndPosition(endPos);
+
           if (onDistanceCalculated) {
             onDistanceCalculated(distance);
+          }
+
+          if (onEndPositionCaptured) {
+            onEndPositionCaptured(endPos);
           }
 
           setStartPosition(null);
@@ -199,5 +222,6 @@ export function useGPS(onDistanceCalculated) {
     gpsLoading,
     gpsError,
     hasStartPosition: !!startPosition,
+    endPosition,
   };
 }
