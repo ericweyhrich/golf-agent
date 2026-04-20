@@ -32,33 +32,67 @@ export function useGPS(onDistanceCalculated) {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        setStartPosition({
-          lat: position.coords.latitude,
-          lon: position.coords.longitude,
-        });
-        setStartTime(Date.now());
-        setGpsLoading(false);
-      },
-      (error) => {
-        let message = 'GPS error';
-        if (error.code === error.PERMISSION_DENIED) {
-          message = 'GPS permission denied. Enable location in settings.';
-        } else if (error.code === error.POSITION_UNAVAILABLE) {
-          message = 'GPS position unavailable';
-        } else if (error.code === error.TIMEOUT) {
-          message = 'GPS timeout - try again';
+    // Watch position and get the most accurate reading
+    let bestAccuracy = Infinity;
+    let bestPosition = null;
+    let watchId = null;
+    let accuracyThreshold = 20; // meters - good accuracy threshold
+
+    const handleSuccess = (position) => {
+      const accuracy = position.coords.accuracy;
+
+      // If we get good accuracy, use this position
+      if (accuracy < accuracyThreshold || accuracy < bestAccuracy) {
+        bestAccuracy = accuracy;
+        bestPosition = position;
+
+        // If accuracy is excellent (< 10m), use it immediately
+        if (accuracy < 10) {
+          if (watchId) navigator.geolocation.clearWatch(watchId);
+          setStartPosition({
+            lat: position.coords.latitude,
+            lon: position.coords.longitude,
+          });
+          setStartTime(Date.now());
+          setGpsLoading(false);
         }
-        setGpsError(message);
-        setGpsLoading(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
       }
-    );
+    };
+
+    const handleError = (error) => {
+      let message = 'GPS error';
+      if (error.code === error.PERMISSION_DENIED) {
+        message = 'GPS permission denied. Enable location in settings.';
+      } else if (error.code === error.POSITION_UNAVAILABLE) {
+        message = 'GPS position unavailable';
+      } else if (error.code === error.TIMEOUT) {
+        message = 'GPS timeout - try again';
+      }
+      setGpsError(message);
+      setGpsLoading(false);
+    };
+
+    // Watch for position with timeout
+    watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0,
+    });
+
+    // Auto-stop after 3 seconds even if accuracy isn't perfect
+    setTimeout(() => {
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        if (bestPosition) {
+          setStartPosition({
+            lat: bestPosition.coords.latitude,
+            lon: bestPosition.coords.longitude,
+          });
+          setStartTime(Date.now());
+          setGpsLoading(false);
+        }
+      }
+    }, 3000);
   };
 
   const endGPS = async () => {
@@ -77,37 +111,79 @@ export function useGPS(onDistanceCalculated) {
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const distance = calculateDistance(
-          startPosition.lat,
-          startPosition.lon,
-          position.coords.latitude,
-          position.coords.longitude
-        );
+    // Watch position and get the most accurate reading
+    let bestAccuracy = Infinity;
+    let bestPosition = null;
+    let watchId = null;
+    let accuracyThreshold = 20; // meters
 
-        if (onDistanceCalculated) {
-          onDistanceCalculated(distance);
-        }
+    const handleSuccess = (position) => {
+      const accuracy = position.coords.accuracy;
 
-        setStartPosition(null);
-        setStartTime(null);
-        setGpsLoading(false);
-      },
-      (error) => {
-        let message = 'GPS error';
-        if (error.code === error.PERMISSION_DENIED) {
-          message = 'GPS permission denied';
+      if (accuracy < accuracyThreshold || accuracy < bestAccuracy) {
+        bestAccuracy = accuracy;
+        bestPosition = position;
+
+        // If accuracy is excellent (< 10m), use it immediately
+        if (accuracy < 10) {
+          if (watchId) navigator.geolocation.clearWatch(watchId);
+
+          const distance = calculateDistance(
+            startPosition.lat,
+            startPosition.lon,
+            position.coords.latitude,
+            position.coords.longitude
+          );
+
+          if (onDistanceCalculated) {
+            onDistanceCalculated(distance);
+          }
+
+          setStartPosition(null);
+          setStartTime(null);
+          setGpsLoading(false);
         }
-        setGpsError(message);
-        setGpsLoading(false);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
       }
-    );
+    };
+
+    const handleError = (error) => {
+      let message = 'GPS error';
+      if (error.code === error.PERMISSION_DENIED) {
+        message = 'GPS permission denied';
+      }
+      setGpsError(message);
+      setGpsLoading(false);
+    };
+
+    // Watch for position
+    watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0,
+    });
+
+    // Auto-stop after 3 seconds even if accuracy isn't perfect
+    setTimeout(() => {
+      if (watchId) {
+        navigator.geolocation.clearWatch(watchId);
+        if (bestPosition) {
+          const distance = calculateDistance(
+            startPosition.lat,
+            startPosition.lon,
+            bestPosition.coords.latitude,
+            bestPosition.coords.longitude
+          );
+
+          if (onDistanceCalculated) {
+            onDistanceCalculated(distance);
+          }
+
+          setStartPosition(null);
+          setStartTime(null);
+          setGpsLoading(false);
+        }
+      }
+    }, 3000);
   };
 
   const resetGPS = () => {
