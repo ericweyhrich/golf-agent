@@ -35,40 +35,9 @@ function App() {
     setAppState('setup');
   };
 
-  const handleImportRound = (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const content = e.target?.result;
-        const data = JSON.parse(content);
-
-        // Validate imported round structure
-        if (data.round && data.round.holes && data.round.setup) {
-          setCompletedRound(data.round);
-          setAppState('summary');
-          console.log('Round imported successfully');
-        } else {
-          alert('Invalid round file format. Please make sure this is a valid exported round.');
-        }
-      } catch (error) {
-        console.error('Failed to import round:', error);
-        alert('Failed to import round. The file may be corrupted or in an incorrect format.');
-      }
-    };
-    reader.readAsText(file);
-
-    // Reset file input
-    event.target.value = '';
-  };
-
   return (
     <div className="app">
-      {appState === 'setup' && (
-        <CourseSetup onStart={handleStartRound} onImportRound={handleImportRound} />
-      )}
+      {appState === 'setup' && <CourseSetup onStart={handleStartRound} />}
       {appState === 'tracking' && (
         <RoundTracker setup={currentSetup} onFinish={handleFinishRound} />
       )}

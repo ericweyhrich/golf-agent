@@ -163,20 +163,6 @@ body {
   border-color: var(--primary);
 }
 
-/* Import Section */
-.import-section {
-  margin-top: 30px;
-  padding-top: 30px;
-  border-top: 1px solid var(--border);
-  text-align: center;
-}
-
-.import-label {
-  color: #666;
-  margin-bottom: 15px;
-  font-size: 14px;
-}
-
 /* Buttons */
 .btn {
   padding: 12px 24px;
@@ -207,16 +193,6 @@ body {
 
 .btn-success:hover {
   background: #45a049;
-  transform: translateY(-2px);
-}
-
-.btn-secondary {
-  background: #757575;
-  color: white;
-}
-
-.btn-secondary:hover {
-  background: #616161;
   transform: translateY(-2px);
 }
 

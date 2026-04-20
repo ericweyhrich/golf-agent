@@ -1,7 +1,7 @@
 import { TEES, getTeeLabel, RED_TAIL_COURSE } from '../data/courseData';
 import { useWeather } from '../hooks/useWeather';
 
-export function CourseSetup({ onStart, onImportRound }) {
+export function CourseSetup({ onStart }) {
   const today = new Date().toISOString().split('T')[0];
   const weather = useWeather(RED_TAIL_COURSE.latitude, RED_TAIL_COURSE.longitude);
 
@@ -70,27 +70,6 @@ export function CourseSetup({ onStart, onImportRound }) {
             Start Round
           </button>
         </form>
-
-        {/* Import Round Section */}
-        {onImportRound && (
-          <div className="import-section">
-            <p className="import-label">Or import a previous round:</p>
-            <input
-              type="file"
-              id="import-round"
-              accept=".json"
-              onChange={onImportRound}
-              style={{ display: 'none' }}
-            />
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => document.getElementById('import-round')?.click()}
-            >
-              📂 Import Round
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );
