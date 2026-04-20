@@ -16,7 +16,7 @@ export function calculateDistance(lat1, lon1, lat2, lon2) {
   return Math.round(distance);
 }
 
-export function useGPS(onDistanceCalculated, onEndPositionCaptured) {
+export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPositionCaptured) {
   const [gpsLoading, setGpsLoading] = useState(false);
   const [gpsError, setGpsError] = useState(null);
   const [startPosition, setStartPosition] = useState(null);
@@ -50,12 +50,17 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured) {
         // If accuracy is excellent (< 10m), use it immediately
         if (accuracy < 10) {
           if (watchId) navigator.geolocation.clearWatch(watchId);
-          setStartPosition({
+          const startPos = {
             lat: position.coords.latitude,
             lon: position.coords.longitude,
-          });
+          };
+          setStartPosition(startPos);
           setStartTime(Date.now());
           setGpsLoading(false);
+
+          if (onStartPositionCaptured) {
+            onStartPositionCaptured(startPos);
+          }
         }
       }
     };
@@ -85,12 +90,17 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured) {
       if (watchId) {
         navigator.geolocation.clearWatch(watchId);
         if (bestPosition) {
-          setStartPosition({
+          const startPos = {
             lat: bestPosition.coords.latitude,
             lon: bestPosition.coords.longitude,
-          });
+          };
+          setStartPosition(startPos);
           setStartTime(Date.now());
           setGpsLoading(false);
+
+          if (onStartPositionCaptured) {
+            onStartPositionCaptured(startPos);
+          }
         }
       }
     }, 3000);

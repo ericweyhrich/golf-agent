@@ -38,6 +38,10 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate }) {
     (endPos) => {
       updateCurrentShot('gpsLat', endPos.lat);
       updateCurrentShot('gpsLon', endPos.lon);
+    },
+    (startPos) => {
+      updateCurrentShot('gpsStartLat', startPos.lat);
+      updateCurrentShot('gpsStartLon', startPos.lon);
     }
   );
 
@@ -167,16 +171,36 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate }) {
                 {gps.gpsLoading ? '⏳' : '📍'} Start GPS
               </button>
             ) : currentShot.gpsActive && !currentShot.endGPS ? (
-              <button
-                className="btn-gps btn-gps-end"
-                onClick={handleEndGPS}
-                disabled={gps.gpsLoading}
-              >
-                {gps.gpsLoading ? '⏳' : '📍'} End GPS
-              </button>
+              <>
+                <button
+                  className="btn-gps btn-gps-end"
+                  onClick={handleEndGPS}
+                  disabled={gps.gpsLoading}
+                >
+                  {gps.gpsLoading ? '⏳' : '📍'} End GPS
+                </button>
+                {currentShot.gpsStartLat && currentShot.gpsStartLon && (
+                  <div className="gps-coordinates">
+                    <p className="gps-label">📍 Start Position Locked:</p>
+                    <p className="gps-coords">
+                      Lat: {parseFloat(currentShot.gpsStartLat).toFixed(6)}<br />
+                      Lon: {parseFloat(currentShot.gpsStartLon).toFixed(6)}
+                    </p>
+                  </div>
+                )}
+              </>
             ) : currentShot.endGPS ? (
               <div className="gps-result">
-                ✅ Distance recorded: {currentShot.endGPS} yards away
+                <div>✅ Distance recorded: {currentShot.endGPS} yards away</div>
+                {currentShot.gpsStartLat && currentShot.gpsStartLon && currentShot.gpsLat && currentShot.gpsLon && (
+                  <div className="gps-coordinates">
+                    <p className="gps-label">📍 Start → End Coordinates:</p>
+                    <p className="gps-coords">
+                      Start: {parseFloat(currentShot.gpsStartLat).toFixed(6)}, {parseFloat(currentShot.gpsStartLon).toFixed(6)}<br />
+                      End: {parseFloat(currentShot.gpsLat).toFixed(6)}, {parseFloat(currentShot.gpsLon).toFixed(6)}
+                    </p>
+                  </div>
+                )}
               </div>
             ) : null}
           </div>
