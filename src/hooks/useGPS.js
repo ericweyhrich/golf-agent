@@ -37,18 +37,23 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
     let bestAccuracy = Infinity;
     let bestPosition = null;
     let watchId = null;
-    let accuracyThreshold = 20; // meters - good accuracy threshold
+    let accuracyThreshold = 30; // meters - good accuracy threshold
+    let locked = false;
 
     const handleSuccess = (position) => {
+      if (locked) return; // Already locked in a position
+
       const accuracy = position.coords.accuracy;
+      console.log(`[GPS Start] Accuracy: ${accuracy.toFixed(2)}m, Lat: ${position.coords.latitude}, Lon: ${position.coords.longitude}`);
 
       // If we get good accuracy, use this position
       if (accuracy < accuracyThreshold || accuracy < bestAccuracy) {
         bestAccuracy = accuracy;
         bestPosition = position;
 
-        // If accuracy is excellent (< 10m), use it immediately
-        if (accuracy < 10) {
+        // If accuracy is excellent (< 15m), use it immediately
+        if (accuracy < 15) {
+          locked = true;
           if (watchId) navigator.geolocation.clearWatch(watchId);
           const startPos = {
             lat: position.coords.latitude,
@@ -57,6 +62,7 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
           setStartPosition(startPos);
           setStartTime(Date.now());
           setGpsLoading(false);
+          console.log('[GPS Start] Position locked (excellent accuracy)', startPos);
 
           if (onStartPositionCaptured) {
             onStartPositionCaptured(startPos);
@@ -74,6 +80,7 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
       } else if (error.code === error.TIMEOUT) {
         message = 'GPS timeout - try again';
       }
+      console.error('[GPS Start] Error:', message);
       setGpsError(message);
       setGpsLoading(false);
     };
@@ -81,12 +88,13 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
     // Watch for position with timeout
     watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
       enableHighAccuracy: true,
-      timeout: 5000,
+      timeout: 8000,
       maximumAge: 0,
     });
 
-    // Auto-stop after 3 seconds even if accuracy isn't perfect
+    // Auto-stop after 5 seconds even if accuracy isn't perfect
     setTimeout(() => {
+      if (locked) return; // Already locked
       if (watchId) {
         navigator.geolocation.clearWatch(watchId);
         if (bestPosition) {
@@ -97,13 +105,18 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
           setStartPosition(startPos);
           setStartTime(Date.now());
           setGpsLoading(false);
+          console.log('[GPS Start] Position locked (timeout)', startPos, `Accuracy: ${bestAccuracy.toFixed(2)}m`);
 
           if (onStartPositionCaptured) {
             onStartPositionCaptured(startPos);
           }
+        } else {
+          console.error('[GPS Start] No position found within timeout');
+          setGpsError('Could not get GPS position. Try again in a few seconds.');
+          setGpsLoading(false);
         }
       }
-    }, 3000);
+    }, 5000);
   };
 
   const endGPS = async () => {
@@ -126,17 +139,22 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
     let bestAccuracy = Infinity;
     let bestPosition = null;
     let watchId = null;
-    let accuracyThreshold = 20; // meters
+    let accuracyThreshold = 30; // meters
+    let locked = false;
 
     const handleSuccess = (position) => {
+      if (locked) return; // Already locked
+
       const accuracy = position.coords.accuracy;
+      console.log(`[GPS End] Accuracy: ${accuracy.toFixed(2)}m, Lat: ${position.coords.latitude}, Lon: ${position.coords.longitude}`);
 
       if (accuracy < accuracyThreshold || accuracy < bestAccuracy) {
         bestAccuracy = accuracy;
         bestPosition = position;
 
-        // If accuracy is excellent (< 10m), use it immediately
-        if (accuracy < 10) {
+        // If accuracy is excellent (< 15m), use it immediately
+        if (accuracy < 15) {
+          locked = true;
           if (watchId) navigator.geolocation.clearWatch(watchId);
 
           const distance = calculateDistance(
@@ -152,6 +170,7 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
           };
 
           setEndPosition(endPos);
+          console.log(`[GPS End] Position locked (excellent accuracy), Distance: ${distance} yards`, endPos);
 
           if (onDistanceCalculated) {
             onDistanceCalculated(distance);
@@ -173,6 +192,7 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
       if (error.code === error.PERMISSION_DENIED) {
         message = 'GPS permission denied';
       }
+      console.error('[GPS End] Error:', message);
       setGpsError(message);
       setGpsLoading(false);
     };
@@ -180,12 +200,13 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
     // Watch for position
     watchId = navigator.geolocation.watchPosition(handleSuccess, handleError, {
       enableHighAccuracy: true,
-      timeout: 5000,
+      timeout: 8000,
       maximumAge: 0,
     });
 
-    // Auto-stop after 3 seconds even if accuracy isn't perfect
+    // Auto-stop after 5 seconds even if accuracy isn't perfect
     setTimeout(() => {
+      if (locked) return; // Already locked
       if (watchId) {
         navigator.geolocation.clearWatch(watchId);
         if (bestPosition) {
@@ -202,6 +223,7 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
           };
 
           setEndPosition(endPos);
+          console.log(`[GPS End] Position locked (timeout), Distance: ${distance} yards, Accuracy: ${bestAccuracy.toFixed(2)}m`, endPos);
 
           if (onDistanceCalculated) {
             onDistanceCalculated(distance);
@@ -214,9 +236,13 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
           setStartPosition(null);
           setStartTime(null);
           setGpsLoading(false);
+        } else {
+          console.error('[GPS End] No position found within timeout');
+          setGpsError('Could not get GPS position. Try again.');
+          setGpsLoading(false);
         }
       }
-    }, 3000);
+    }, 5000);
   };
 
   const resetGPS = () => {
