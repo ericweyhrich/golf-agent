@@ -171,7 +171,11 @@ export function RoundSummary({ round, onNewRound, onViewRound }) {
         <div className="summary-meta">
           <div className="meta-item">
             <span className="label">Date</span>
-            <span className="value">{date.toLocaleDateString()}</span>
+            <span className="value">{new Date(setup.date).toLocaleDateString()}</span>
+          </div>
+          <div className="meta-item">
+            <span className="label">Time Started</span>
+            <span className="value">{setup.time || new Date(setup.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
           </div>
           <div className="meta-item">
             <span className="label">Tees</span>

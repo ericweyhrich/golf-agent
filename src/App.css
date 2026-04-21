@@ -164,6 +164,47 @@ body {
   border-color: var(--primary);
 }
 
+/* Tee Selection */
+.tee-selection {
+  margin-bottom: 20px;
+}
+
+.tee-selection label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--dark);
+  font-size: 16px;
+}
+
+.tee-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.btn-tee {
+  padding: 14px 16px;
+  border: 2px solid var(--border);
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-tee:hover {
+  border-color: var(--primary);
+  background: #f0f7ff;
+}
+
+.btn-tee:active {
+  border-color: var(--primary-dark);
+  background: var(--primary);
+  color: white;
+}
+
 /* Buttons */
 .btn {
   padding: 16px 24px;

@@ -2,15 +2,19 @@ import { TEES, getTeeLabel, RED_TAIL_COURSE } from '../data/courseData';
 import { useWeather } from '../hooks/useWeather';
 
 export function CourseSetup({ onStart }) {
-  const today = new Date().toISOString().split('T')[0];
   const weather = useWeather(RED_TAIL_COURSE.latitude, RED_TAIL_COURSE.longitude);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
+  const handleStartRound = (tee) => {
+    const now = new Date();
     onStart({
-      tee: formData.get('tee'),
-      date: formData.get('date'),
+      tee,
+      date: now.toISOString().split('T')[0],
+      time: now.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }),
+      timestamp: now.toISOString(),
       weather: weather.condition,
       temperature: weather.temperature,
       weatherData: weather,
@@ -49,27 +53,20 @@ export function CourseSetup({ onStart }) {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="date">Date</label>
-            <input type="date" id="date" name="date" defaultValue={today} required />
+        <div className="tee-selection">
+          <label>Tee Selection</label>
+          <div className="tee-buttons">
+            {TEES.map(tee => (
+              <button
+                key={tee}
+                className="btn btn-tee"
+                onClick={() => handleStartRound(tee)}
+              >
+                {getTeeLabel(tee)} Tees
+              </button>
+            ))}
           </div>
-
-          <div className="form-group">
-            <label htmlFor="tee">Tee Selection</label>
-            <select id="tee" name="tee" defaultValue="white" required>
-              {TEES.map(tee => (
-                <option key={tee} value={tee}>
-                  {getTeeLabel(tee)} Tees
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <button type="submit" className="btn btn-primary">
-            Start Round
-          </button>
-        </form>
+        </div>
       </div>
     </div>
   );
