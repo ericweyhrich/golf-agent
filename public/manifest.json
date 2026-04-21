@@ -2,26 +2,26 @@
   "name": "Red Tail Golf Scorecard",
   "short_name": "Golf Scorecard",
   "description": "Track your golf rounds with GPS distance measurement and detailed statistics",
-  "start_url": "/",
+  "start_url": "/golf-agent/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2196F3",
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/golf-icon.jpg",
+      "src": "/golf-agent/golf-icon.jpg",
       "sizes": "192x192",
       "type": "image/jpeg",
       "purpose": "any"
     },
     {
-      "src": "/golf-icon.jpg",
+      "src": "/golf-agent/golf-icon.jpg",
       "sizes": "512x512",
       "type": "image/jpeg",
       "purpose": "any"
     },
     {
-      "src": "/golf-icon.jpg",
+      "src": "/golf-agent/golf-icon.jpg",
       "sizes": "192x192",
       "type": "image/jpeg",
       "purpose": "maskable"
@@ -30,13 +30,13 @@
   "categories": ["sports"],
   "screenshots": [
     {
-      "src": "/golf-icon.jpg",
+      "src": "/golf-agent/golf-icon.jpg",
       "sizes": "540x720",
       "type": "image/jpeg",
       "form_factor": "narrow"
     },
     {
-      "src": "/golf-icon.jpg",
+      "src": "/golf-agent/golf-icon.jpg",
       "sizes": "1280x720",
       "type": "image/jpeg",
       "form_factor": "wide"
