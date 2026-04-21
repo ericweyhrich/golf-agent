@@ -162,7 +162,7 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate }) {
           </div>
 
           <div className="gps-controls">
-            {!currentShot.gpsActive && !currentShot.endGPS ? (
+            {!currentShot.gpsActive && (currentShot.endGPS === undefined || currentShot.endGPS === null) ? (
               <button
                 className="btn-gps btn-gps-start"
                 onClick={handleStartGPS}
@@ -170,7 +170,7 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate }) {
               >
                 {gps.gpsLoading ? '⏳' : '📍'} Start GPS
               </button>
-            ) : currentShot.gpsActive && !currentShot.endGPS ? (
+            ) : currentShot.gpsActive && (currentShot.endGPS === undefined || currentShot.endGPS === null) ? (
               <>
                 <button
                   className="btn-gps btn-gps-end"
@@ -189,7 +189,7 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate }) {
                   </div>
                 )}
               </>
-            ) : currentShot.endGPS ? (
+            ) : currentShot.endGPS !== undefined && currentShot.endGPS !== null ? (
               <div className="gps-result">
                 <div>✅ Distance recorded: {currentShot.endGPS} yards away</div>
                 {currentShot.gpsStartLat && currentShot.gpsStartLon && currentShot.gpsLat && currentShot.gpsLon && (
@@ -210,7 +210,7 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate }) {
           )}
 
           {/* Lie Selection - Shows only after GPS is complete */}
-          {currentShot.endGPS && !currentShot.lie && (
+          {currentShot.endGPS !== undefined && currentShot.endGPS !== null && !currentShot.lie && (
             <div className="lie-selection">
               <label>Where did it land?</label>
               <div className="lie-buttons">
