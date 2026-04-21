@@ -178,6 +178,10 @@ export function RoundSummary({ round, onNewRound, onViewRound }) {
             <span className="value">{setup.time || new Date(setup.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
           </div>
           <div className="meta-item">
+            <span className="label">Time Ended</span>
+            <span className="value">{new Date(completedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</span>
+          </div>
+          <div className="meta-item">
             <span className="label">Tees</span>
             <span className="value">{setup.tee.charAt(0).toUpperCase() + setup.tee.slice(1)}</span>
           </div>
