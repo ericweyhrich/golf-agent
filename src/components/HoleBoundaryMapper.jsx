@@ -10,12 +10,38 @@ const HoleBoundaryMapper = ({ holeNumber, holeData, onSaveFeatures, onClose }) =
   const drawnLayersRef = useRef([]);
   const pointsRef = useRef([]);
 
-  // Load existing features from hole data when mapper opens
+  // Load existing features from hole data or localStorage when mapper opens
   useEffect(() => {
     if (holeData?.features && holeData.features.length > 0) {
+      console.log('Loading existing features for hole', holeNumber, ':', holeData.features);
       setFeatures(holeData.features);
+    } else {
+      // Try to load from localStorage
+      try {
+        const stored = localStorage.getItem(`hole_${holeNumber}_boundaries`);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          console.log('Loaded', parsed.length, 'features from localStorage for hole', holeNumber);
+          setFeatures(parsed);
+        }
+      } catch (e) {
+        console.error('Error loading from localStorage:', e);
+      }
     }
   }, [holeNumber, holeData?.features]);
+
+  // Auto-save features to localStorage whenever they change
+  useEffect(() => {
+    if (features.length > 0) {
+      try {
+        localStorage.setItem(`hole_${holeNumber}_boundaries`, JSON.stringify(features));
+        console.log('Auto-saved', features.length, 'features to localStorage for hole', holeNumber);
+      } catch (e) {
+        console.error('Error saving to localStorage:', e);
+      }
+    }
+  }, [features, holeNumber]);
+
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -184,6 +210,15 @@ const HoleBoundaryMapper = ({ holeNumber, holeData, onSaveFeatures, onClose }) =
   };
 
   const finishMapping = () => {
+    // Explicitly save to localStorage before closing
+    if (features.length > 0) {
+      try {
+        localStorage.setItem(`hole_${holeNumber}_boundaries`, JSON.stringify(features));
+        console.log('Explicitly saved', features.length, 'features to localStorage before closing');
+      } catch (e) {
+        console.error('Error saving to localStorage:', e);
+      }
+    }
     onSaveFeatures(features);
     onClose();
   };

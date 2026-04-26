@@ -1,0 +1,458 @@
+.round-stats-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 16px;
+  height: 100%;
+  overflow-y: auto;
+  background: #0B1D2A;
+}
+
+/* Stats Summary Cards */
+.stats-summary {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.summary-card {
+  background: #223645;
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  border-left: 4px solid #3A4A5C;
+  transition: all 0.2s ease;
+  border-top: 1px solid #3A4A5C;
+}
+
+.summary-card.large {
+  grid-column: 1;
+  padding: 20px 16px;
+  background: linear-gradient(135deg, #7C4DFF, #6A3FD0);
+  color: white;
+  border-left: 4px solid #5A2FBF;
+}
+
+.summary-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.card-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #A8B5C4;
+  margin-bottom: 8px;
+}
+
+.summary-card.large .card-label {
+  color: rgba(255, 255, 255, 0.9);
+  opacity: 0.9;
+}
+
+.card-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #E6EDF3;
+  margin: 0;
+  line-height: 1;
+}
+
+.summary-card.large .card-value {
+  color: white;
+}
+
+.card-value.under {
+  color: #4CAF50;
+}
+
+.summary-card.large .card-value.under {
+  color: #81C784;
+}
+
+.card-value.even {
+  color: #2196F3;
+}
+
+.summary-card.large .card-value.even {
+  color: #fff;
+}
+
+.card-value.over {
+  color: #f44336;
+}
+
+.summary-card.large .card-value.over {
+  color: #EF9A9A;
+}
+
+.card-value.no-score {
+  color: #bbb;
+}
+
+.card-par {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 4px;
+}
+
+/* Nine-Hole Section */
+.nine-hole-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.nine-hole-card {
+  background: #223645;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  border: 1px solid #3A4A5C;
+}
+
+.nine-hole-header {
+  background: linear-gradient(135deg, #FF8A00, #E67E00);
+  color: #FFFFFF;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.nine-hole-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 12px;
+  gap: 8px;
+}
+
+.nine-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px;
+  background: #2D3F52;
+  border-radius: 6px;
+}
+
+.nine-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #A8B5C4;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.nine-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #E6EDF3;
+}
+
+.nine-value.under {
+  color: #4CAF50;
+}
+
+.nine-value.even {
+  color: #2196F3;
+}
+
+.nine-value.over {
+  color: #f44336;
+}
+
+.nine-value.no-score {
+  color: #bbb;
+}
+
+/* Running Totals */
+.running-totals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.totals-card {
+  background: #223645;
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  border-top: 3px solid #7C4DFF;
+  border: 1px solid #3A4A5C;
+  border-top: 3px solid #7C4DFF;
+}
+
+.totals-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.totals-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.totals-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #A8B5C4;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.totals-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #7C4DFF;
+}
+
+/* Scorecard Section */
+.scorecard-section {
+  background: #223645;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid #3A4A5C;
+}
+
+.scorecard-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: #E6EDF3;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #3A4A5C;
+}
+
+.scorecard-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 8px;
+}
+
+.scorecard-hole {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  background: #2D3F52;
+  border-radius: 8px;
+  border: 2px solid #3A4A5C;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.scorecard-hole:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.scorecard-hole.current {
+  background: #3A4A5C;
+  border: 2px solid #7C4DFF;
+  box-shadow: 0 2px 8px rgba(124, 77, 255, 0.3);
+}
+
+.scorecard-hole.under {
+  background: #2D4A3C;
+  border-color: #22C55E;
+}
+
+.scorecard-hole.even {
+  background: #2D4A5C;
+  border-color: #7C4DFF;
+}
+
+.scorecard-hole.over {
+  background: #4A2D2D;
+  border-color: #EF4444;
+}
+
+.scorecard-hole.no-score {
+  background: #f5f5f5;
+  border-color: #e0e0e0;
+  opacity: 0.7;
+}
+
+.hole-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: #A8B5C4;
+  text-transform: uppercase;
+}
+
+.hole-par {
+  font-size: 10px;
+  font-weight: 600;
+  color: #7C8FA5;
+}
+
+.hole-score {
+  font-size: 18px;
+  font-weight: 700;
+  color: #E6EDF3;
+}
+
+.scorecard-hole.under .hole-score {
+  color: #22C55E;
+}
+
+.scorecard-hole.even .hole-score {
+  color: #7C4DFF;
+}
+
+.scorecard-hole.over .hole-score {
+  color: #EF4444;
+}
+
+.scorecard-hole.no-score .hole-score {
+  color: #7C8FA5;
+}
+
+/* Club Stats Section */
+.club-stats-section {
+  background: #223645;
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid #3A4A5C;
+}
+
+.club-stats-header {
+  font-size: 14px;
+  font-weight: 700;
+  color: #E6EDF3;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #3A4A5C;
+}
+
+.club-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.club-stat-item {
+  background: linear-gradient(135deg, #2D3F52, #3A4A5C);
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid #7C4DFF;
+  transition: all 0.2s ease;
+  border-top: 1px solid #3A4A5C;
+}
+
+.club-stat-item:hover {
+  box-shadow: 0 2px 8px rgba(124, 77, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.club-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #A8B5C4;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.club-distance {
+  font-size: 18px;
+  font-weight: 700;
+  color: #7C4DFF;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .stats-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .summary-card.large {
+    grid-column: 1 / -1;
+  }
+
+  .nine-hole-section {
+    grid-template-columns: 1fr;
+  }
+
+  .running-totals {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .scorecard-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .club-stats-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .round-stats-tab {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .stats-summary {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .summary-card {
+    padding: 12px;
+  }
+
+  .card-value {
+    font-size: 24px;
+  }
+
+  .nine-hole-section {
+    grid-template-columns: 1fr;
+  }
+
+  .running-totals {
+    grid-template-columns: 1fr;
+  }
+
+  .scorecard-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .scorecard-hole {
+    padding: 8px 6px;
+  }
+
+  .hole-num {
+    font-size: 10px;
+  }
+
+  .hole-score {
+    font-size: 16px;
+  }
+
+  .club-stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

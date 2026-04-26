@@ -3,8 +3,9 @@ import { RED_TAIL_COURSE } from '../data/courseData';
 import { useGPS } from '../hooks/useGPS';
 import InteractiveGolfMap from './InteractiveGolfMap';
 import ShotMarkerModal from './ShotMarkerModal';
+import ShotStatsTab from './ShotStatsTab';
+import RoundStatsTab from './RoundStatsTab';
 import { HoleMapModal } from './HoleMapModal';
-import HoleBoundaryMapper from './HoleBoundaryMapper';
 
 export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate, allHoles, setup }) {
   const holeInfo = RED_TAIL_COURSE.holes.find(h => h.hole === hole);
@@ -18,17 +19,11 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate, allHoles
   const [showHoleMapModal, setShowHoleMapModal] = useState(false);
   const [putts, setPutts] = useState('');
   const [holeComplete, setHoleComplete] = useState(false);
-  const [showMapper, setShowMapper] = useState(false);
-  const [mappedFeatures, setMappedFeatures] = useState(holeData?.features || []);
   const gpsPollingRef = useRef(null);
   const [playerGPS, setPlayerGPS] = useState(null);
+  const [activeTab, setActiveTab] = useState('gps'); // 'gps', 'stats', or 'round'
 
   const gps = useGPS();
-
-  // Sync mapped features when hole data changes
-  useEffect(() => {
-    setMappedFeatures(holeData?.features || []);
-  }, [holeData?.features]);
 
   // Auto-start GPS polling on component mount
   useEffect(() => {
@@ -89,22 +84,6 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate, allHoles
     onNavigate(hole + 1);
   };
 
-  const handleSaveMapperFeatures = (features) => {
-    console.log('Mapped features for hole', hole, ':', features);
-    // Save features to state
-    setMappedFeatures(features);
-    // Also pass features to parent for persistence
-    onUpdate({
-      hole,
-      features,
-      shots: holeData?.shots || shots,
-      totalStrokes: holeData?.totalStrokes,
-      putts: holeData?.putts,
-      score: holeData?.score
-    });
-    setShowMapper(false);
-  };
-
   return (
     <div className="hole-detail map-first-layout">
       {/* Header with navigation & shot count */}
@@ -118,9 +97,6 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate, allHoles
         </div>
         <button className="nav-btn" onClick={() => onNavigate(hole + 1)}>
           Next →
-        </button>
-        <button className="btn-map-hole" onClick={() => setShowMapper(true)} title="Map hole boundaries">
-          📍 Map Hole
         </button>
       </div>
 
@@ -140,18 +116,59 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate, allHoles
         </div>
       </div>
 
-      {/* Interactive map - PRIMARY interface */}
-      <div className="map-section">
-        <InteractiveGolfMap
-          holeNumber={hole}
-          holeData={holeInfo}
-          playerGPS={playerGPS}
-          shots={shots}
-          courseGeoJSON={mappedFeatures.length > 0 ? { type: 'FeatureCollection', features: mappedFeatures } : null}
-          selectedTee={tee}
-          onTapLocation={handleMapTap}
-          onYardageCalculated={handleYardageCalculated}
-        />
+      {/* Tab navigation */}
+      <div className="tab-navigation">
+        <button
+          className={`tab-btn ${activeTab === 'gps' ? 'active' : ''}`}
+          onClick={() => setActiveTab('gps')}
+        >
+          📍 GPS & Measurement
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'stats' ? 'active' : ''}`}
+          onClick={() => setActiveTab('stats')}
+        >
+          📊 Shot Tracking
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'round' ? 'active' : ''}`}
+          onClick={() => setActiveTab('round')}
+        >
+          📈 Round Stats
+        </button>
+      </div>
+
+      {/* Tab content */}
+      <div className="tab-content">
+        {activeTab === 'gps' && (
+          <div className="map-section">
+            <InteractiveGolfMap
+              holeNumber={hole}
+              holeData={holeInfo}
+              playerGPS={playerGPS}
+              shots={shots}
+              selectedTee={tee}
+              onTapLocation={handleMapTap}
+              onYardageCalculated={handleYardageCalculated}
+            />
+          </div>
+        )}
+        {activeTab === 'stats' && (
+          <ShotStatsTab
+            shots={shots}
+            gps={gps}
+            holeData={holeInfo}
+            holeNumber={hole}
+            onShotSave={handleSaveShot}
+          />
+        )}
+        {activeTab === 'round' && (
+          <RoundStatsTab
+            allHoles={allHoles}
+            currentHole={hole}
+            tee={tee}
+          />
+        )}
       </div>
 
       {/* Shot summary at bottom */}
@@ -161,7 +178,7 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate, allHoles
             <div key={idx} className="shot-item">
               <span className="shot-num">{idx + 1}</span>
               <span className="shot-club">{shot.club}</span>
-              <span className="shot-lie">{shot.lie}</span>
+              <span className="shot-lie">{shot.distance}yds → {shot.lie}</span>
             </div>
           ))}
         </div>
@@ -220,16 +237,6 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate, allHoles
           holes={allHoles}
           setup={setup}
           onClose={handleCloseHoleMap}
-        />
-      )}
-
-      {/* Hole boundary mapper */}
-      {showMapper && (
-        <HoleBoundaryMapper
-          holeNumber={hole}
-          holeData={{ ...holeInfo, features: mappedFeatures }}
-          onSaveFeatures={handleSaveMapperFeatures}
-          onClose={() => setShowMapper(false)}
         />
       )}
     </div>

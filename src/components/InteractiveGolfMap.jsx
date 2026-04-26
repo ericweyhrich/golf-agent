@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { calculateAllDistances, calculateDistance } from '../utils/distanceCalculations';
-import { getHoleHazards } from '../data/hazardData';
+import { calculateDistance } from '../utils/distanceCalculations';
 import './InteractiveGolfMap.css';
 
 const InteractiveGolfMap = ({
@@ -8,7 +7,6 @@ const InteractiveGolfMap = ({
   holeData,
   playerGPS,
   shots,
-  courseGeoJSON,
   selectedTee,
   onTapLocation,
   onYardageCalculated,
@@ -19,12 +17,11 @@ const InteractiveGolfMap = ({
   const greenMarker = useRef(null);
   const shotMarkers = useRef([]);
   const shotPolyline = useRef(null);
-  const hazardPolygons = useRef([]);
   const [measurementMode, setMeasurementMode] = useState(false);
   const [measurementPoints, setMeasurementPoints] = useState([]);
   const measurementMarkers = useRef([]);
-  const measurementLine = useRef(null);
-  const measurementLabel = useRef(null);
+  const measurementLine = useRef([]);
+  const measurementLabels = useRef([]);
 
   // Initialize map
   useEffect(() => {
@@ -42,7 +39,7 @@ const InteractiveGolfMap = ({
 
       map.current = new window.google.maps.Map(mapContainer.current, {
         center: { lat: centerLat, lng: centerLng },
-        zoom: 20,
+        zoom: 18,
         mapTypeId: window.google.maps.MapTypeId.SATELLITE,
         fullscreenControl: false,
         streetViewControl: false,
@@ -73,15 +70,8 @@ const InteractiveGolfMap = ({
           // Distance will be displayed in the useEffect below
         }
       } else {
-        // Normal mode: calculate distances from tap location
-        const distances = calculateAllDistances(
-          { lat: clickedLat, lng: clickedLng },
-          holeData,
-          courseGeoJSON
-        );
-
+        // Normal mode: record shot location
         onTapLocation(tapPos);
-        onYardageCalculated(distances);
       }
     };
 
@@ -90,99 +80,7 @@ const InteractiveGolfMap = ({
     return () => {
       google.maps.event.removeListener(listener);
     };
-  }, [measurementMode, measurementPoints, holeData, courseGeoJSON, onTapLocation, onYardageCalculated]);
-
-  // Styling function for hazard features
-  const getHazardStyle = (feature) => {
-    const type = feature.properties.type;
-    const styles = {
-      hole_outline: { strokeColor: '#000', strokeWeight: 3, fillColor: 'transparent', fillOpacity: 0 },
-      green: { strokeColor: '#2d5a2d', strokeWeight: 2, fillColor: '#90ee90', fillOpacity: 0.5 },
-      fairway: { strokeColor: '#2d5a2d', strokeWeight: 1, fillColor: '#90ee90', fillOpacity: 0.4 },
-      rough: { strokeColor: '#4a6b3d', strokeWeight: 1, fillColor: '#7cb342', fillOpacity: 0.3 },
-      bunker: { strokeColor: '#c9a85d', strokeWeight: 2, fillColor: '#e8d7b8', fillOpacity: 0.6 },
-      water: { strokeColor: '#1e88e5', strokeWeight: 2, fillColor: '#64b5f6', fillOpacity: 0.5 },
-      oob: { strokeColor: '#d32f2f', strokeWeight: 2, fillColor: '#ffcdd2', fillOpacity: 0.3 },
-    };
-    return styles[type] || { strokeColor: '#999', strokeWeight: 1, fillOpacity: 0.2 };
-  };
-
-  // Helper: Convert GeoJSON coordinates to Google Maps LatLng
-  const geoJsonToGoogleMaps = (coords) => {
-    return coords.map(([lng, lat]) => new window.google.maps.LatLng(lat, lng));
-  };
-
-  // Render mapped features from courseGeoJSON (only for current hole)
-  useEffect(() => {
-    if (!map.current || !courseGeoJSON?.features) return;
-
-    // Clear previous polygons
-    hazardPolygons.current.forEach(polygon => {
-      polygon.setMap(null);
-    });
-    hazardPolygons.current = [];
-
-    // Filter features to only show current hole's boundary
-    const currentHoleFeatures = courseGeoJSON.features.filter(
-      feature => feature.properties.hole === holeNumber
-    );
-
-    // Render each feature
-    currentHoleFeatures.forEach((feature) => {
-      const style = getHazardStyle(feature);
-      const coords = feature.geometry.coordinates[0];
-      const paths = geoJsonToGoogleMaps(coords);
-
-      const polygon = new window.google.maps.Polygon({
-        map: map.current,
-        paths,
-        strokeColor: style.strokeColor,
-        strokeWeight: style.strokeWeight,
-        fillColor: style.fillColor,
-        fillOpacity: style.fillOpacity,
-      });
-
-      // Add info window on click
-      polygon.addListener('click', () => {
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: `<strong>${feature.properties.name}</strong><br>Type: ${feature.properties.type}`,
-          position: paths[0],
-        });
-        infoWindow.open(map.current);
-      });
-
-      hazardPolygons.current.push(polygon);
-    });
-  }, [courseGeoJSON, holeNumber]);
-
-  // Fit map to hole boundary and create masking overlay
-  useEffect(() => {
-    if (!map.current || !courseGeoJSON?.features) return;
-
-    const currentHoleFeatures = courseGeoJSON.features.filter(
-      feature => feature.properties.hole === holeNumber
-    );
-
-    if (currentHoleFeatures.length === 0) return;
-
-    // Calculate bounds from hole boundary
-    const bounds = new window.google.maps.LatLngBounds();
-
-    currentHoleFeatures.forEach(feature => {
-      const coords = feature.geometry.coordinates[0];
-      coords.forEach(([lng, lat]) => {
-        bounds.extend(new window.google.maps.LatLng(lat, lng));
-      });
-    });
-
-    // Fit map to hole boundary with minimal padding and zoom in
-    map.current.fitBounds(bounds, 5);
-    // Zoom in more to fill the screen with just the hole outline
-    setTimeout(() => {
-      const currentZoom = map.current.getZoom();
-      map.current.setZoom(currentZoom + 2);
-    }, 100);
-  }, [courseGeoJSON, holeNumber]);
+  }, [measurementMode, measurementPoints, holeData, onTapLocation]);
 
   // Pan to hole location when hole data changes
   useEffect(() => {
@@ -190,7 +88,7 @@ const InteractiveGolfMap = ({
     map.current.panTo(new window.google.maps.LatLng(holeData.greenLat, holeData.greenLon));
   }, [holeData?.hole]);
 
-  // Update player position marker
+  // Update player position marker (don't pan to it - keep map on hole)
   useEffect(() => {
     if (!map.current || !playerGPS) return;
 
@@ -204,8 +102,6 @@ const InteractiveGolfMap = ({
         icon: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
       });
     }
-
-    map.current.panTo(new window.google.maps.LatLng(playerGPS.lat, playerGPS.lng));
   }, [playerGPS]);
 
   // Render shot trail
@@ -279,7 +175,7 @@ const InteractiveGolfMap = ({
     });
   }, [holeData, holeNumber]);
 
-  // Render measurement markers and line
+  // Render measurement markers and lines
   useEffect(() => {
     if (!map.current) return;
 
@@ -289,10 +185,16 @@ const InteractiveGolfMap = ({
     });
     measurementMarkers.current = [];
 
-    // Clear previous measurement line
+    // Clear previous measurement lines and labels
     if (measurementLine.current) {
-      measurementLine.current.setMap(null);
-      measurementLine.current = null;
+      measurementLine.current.forEach(line => line.setMap(null));
+      measurementLine.current = [];
+    }
+
+    // Close all measurement labels (InfoWindows)
+    if (measurementLabels.current) {
+      measurementLabels.current.forEach(label => label.close());
+      measurementLabels.current = [];
     }
 
     if (measurementPoints.length > 0) {
@@ -307,31 +209,67 @@ const InteractiveGolfMap = ({
         measurementMarkers.current.push(marker);
       });
 
-      // If we have two points, draw a line and show distance
-      if (measurementPoints.length === 2) {
-        const dist = calculateDistance(measurementPoints[0], measurementPoints[1]);
+      // If we have two or more points, draw lines and show distances
+      if (measurementPoints.length >= 2) {
+        // Draw lines between consecutive points
+        for (let i = 0; i < measurementPoints.length - 1; i++) {
+          const currentPoint = measurementPoints[i];
+          const nextPoint = measurementPoints[i + 1];
+          const distance = calculateDistance(currentPoint, nextPoint);
 
-        measurementLine.current = new window.google.maps.Polyline({
-          map: map.current,
-          path: measurementPoints,
-          geodesic: true,
-          strokeColor: '#FF0000',
-          strokeOpacity: 0.8,
-          strokeWeight: 3,
-        });
+          // Line between consecutive points
+          const line = new window.google.maps.Polyline({
+            map: map.current,
+            path: [currentPoint, nextPoint],
+            geodesic: true,
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 3,
+          });
 
-        // Add distance label at midpoint
-        const midLat = (measurementPoints[0].lat + measurementPoints[1].lat) / 2;
-        const midLng = (measurementPoints[0].lng + measurementPoints[1].lng) / 2;
+          // Label with distance
+          const midLat = (currentPoint.lat + nextPoint.lat) / 2;
+          const midLng = (currentPoint.lng + nextPoint.lng) / 2;
+          const label = new window.google.maps.InfoWindow({
+            content: `<div style="font-weight: bold; font-size: 14px; background: white; padding: 4px 8px; border-radius: 4px;">${distance} yds</div>`,
+            position: { lat: midLat, lng: midLng },
+            disableAutoPan: true,
+          });
+          label.open(map.current);
+          measurementLine.current.push(line);
+          measurementLabels.current.push(label);
+        }
 
-        const infoWindow = new window.google.maps.InfoWindow({
-          content: `<div style="font-weight: bold; font-size: 14px; color: #333;">${dist} yards</div>`,
-          position: { lat: midLat, lng: midLng },
-        });
-        infoWindow.open(map.current);
+        // Draw line from last point to green
+        if (holeData?.greenLat && holeData?.greenLon) {
+          const lastPoint = measurementPoints[measurementPoints.length - 1];
+          const distToGreen = calculateDistance(lastPoint, { lat: holeData.greenLat, lng: holeData.greenLon });
+
+          const lineToGreen = new window.google.maps.Polyline({
+            map: map.current,
+            path: [lastPoint, { lat: holeData.greenLat, lng: holeData.greenLon }],
+            geodesic: true,
+            strokeColor: '#00AA00',
+            strokeOpacity: 0.8,
+            strokeWeight: 3,
+            strokeDasharray: [5, 5],
+          });
+
+          // Label for distance to green
+          const midLatGreen = (lastPoint.lat + holeData.greenLat) / 2;
+          const midLngGreen = (lastPoint.lng + holeData.greenLon) / 2;
+          const labelGreen = new window.google.maps.InfoWindow({
+            content: `<div style="font-weight: bold; font-size: 14px; background: white; padding: 4px 8px; border-radius: 4px;">${distToGreen} yds</div>`,
+            position: { lat: midLatGreen, lng: midLngGreen },
+            disableAutoPan: true,
+          });
+          labelGreen.open(map.current);
+          measurementLine.current.push(lineToGreen);
+          measurementLabels.current.push(labelGreen);
+        }
       }
     }
-  }, [measurementPoints, measurementMode]);
+  }, [measurementPoints, measurementMode, holeData]);
 
   // Reset measurement when changing holes
   useEffect(() => {

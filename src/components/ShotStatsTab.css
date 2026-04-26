@@ -1,0 +1,274 @@
+.shot-stats-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Recording Section */
+.recording-section {
+  background: #223645;
+  padding: 20px;
+  border-radius: 8px;
+  border: 2px solid #7C4DFF;
+}
+
+.recording-section h3 {
+  margin: 0 0 15px 0;
+  color: #E6EDF3;
+  font-size: 16px;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.button-group button {
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.button-group button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.distance-display {
+  background: #2D3F52;
+  padding: 15px;
+  border-radius: 6px;
+  text-align: center;
+  border: 2px solid #22C55E;
+}
+
+.distance-label {
+  margin: 0;
+  color: #A8B5C4;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.distance-value {
+  margin: 8px 0 0 0;
+  color: #7C4DFF;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+/* Shot Form */
+.shot-form {
+  background: #223645;
+  padding: 20px;
+  border-radius: 8px;
+  border: 2px solid #FF8A00;
+}
+
+.shot-form h3 {
+  margin: 0 0 15px 0;
+  color: #E6EDF3;
+  font-size: 16px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #E6EDF3;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #3A4A5C;
+  border-radius: 4px;
+  font-size: 14px;
+  background: #2D3F52;
+  cursor: pointer;
+}
+
+.form-group select:focus {
+  outline: none;
+  border-color: #7C4DFF;
+  box-shadow: 0 0 3px rgba(33, 150, 243, 0.3);
+}
+
+.distance-readonly {
+  background: #2D3F52;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.distance-readonly .distance-value {
+  font-size: 20px;
+  color: #7C4DFF;
+  margin: 5px 0 0 0;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.form-buttons button {
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Shot History Section */
+.shot-history-section {
+  background: #223645;
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #3A4A5C;
+}
+
+.shot-history-section h3 {
+  margin: 0 0 15px 0;
+  color: #E6EDF3;
+  font-size: 16px;
+}
+
+.no-shots {
+  color: #999;
+  text-align: center;
+  padding: 20px;
+  font-style: italic;
+  margin: 0;
+}
+
+.shots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.shot-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #2D3F52;
+  border-left: 4px solid #2196F3;
+  border-radius: 4px;
+}
+
+.shot-number {
+  font-weight: 700;
+  color: #7C4DFF;
+  font-size: 16px;
+  min-width: 35px;
+}
+
+.shot-details {
+  flex: 1;
+}
+
+.shot-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.shot-club {
+  font-weight: 600;
+  color: #E6EDF3;
+  font-size: 14px;
+}
+
+.shot-distance {
+  color: #7C4DFF;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.shot-lie {
+  color: #A8B5C4;
+  font-size: 12px;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #2D3F52;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  max-width: 400px;
+  width: 90%;
+}
+
+.modal h3 {
+  margin: 0 0 20px 0;
+  color: #E6EDF3;
+  text-align: center;
+  font-size: 18px;
+}
+
+.confirmation-details {
+  background: #2D3F52;
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+}
+
+.confirmation-details p {
+  margin: 10px 0;
+  color: #E6EDF3;
+  font-size: 14px;
+}
+
+.confirmation-details strong {
+  color: #7C4DFF;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.modal-buttons button {
+  flex: 1;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
