@@ -128,6 +128,8 @@ export function RoundTracker({ setup, onFinish }) {
         holeData={holeData}
         onUpdate={handleHoleUpdate}
         onNavigate={handleNavigate}
+        allHoles={holes}
+        setup={setup}
       />
 
       <div className="tracker-footer">

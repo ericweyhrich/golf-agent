@@ -12,8 +12,14 @@ function App() {
   const [roundHistory, setRoundHistory] = useLocalStorage('golfRoundHistory', []);
 
   const handleStartRound = (setup) => {
+    console.log('App: handleStartRound called with setup:', setup);
+    console.log('App: before setState - appState:', appState);
     setCurrentSetup(setup);
     setAppState('tracking');
+    console.log('App: after setState call');
+    setTimeout(() => {
+      console.log('App: appState after 500ms:', appState);
+    }, 500);
   };
 
   const handleFinishRound = (holes, setup) => {
@@ -35,6 +41,7 @@ function App() {
     setAppState('setup');
   };
 
+  console.log('App: rendering with appState:', appState);
   return (
     <div className="app">
       {appState === 'setup' && <CourseSetup onStart={handleStartRound} />}

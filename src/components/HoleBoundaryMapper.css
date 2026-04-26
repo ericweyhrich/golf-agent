@@ -1,0 +1,192 @@
+.hole-boundary-mapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: white;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.mapper-header {
+  background: #1976d2;
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mapper-header h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 32px;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mapper-content {
+  display: flex;
+  flex: 1;
+  gap: 0;
+  overflow: hidden;
+  height: 100%;
+}
+
+.mapper-map {
+  flex: 1;
+  background: #e0e0e0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 300px !important;
+  display: block !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.mapper-controls {
+  width: 320px;
+  background: white;
+  border-left: 1px solid #ddd;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.control-section {
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+}
+
+.control-section:last-child {
+  border-bottom: none;
+}
+
+.control-section h3 {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.control-section select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  background: white;
+  cursor: pointer;
+}
+
+.control-section p {
+  margin: 5px 0;
+  font-size: 13px;
+  color: #666;
+  line-height: 1.4;
+}
+
+.points-count {
+  background: #f5f5f5;
+  padding: 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  color: #1976d2;
+  margin-top: 10px;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.btn-primary {
+  background: #1976d2;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #1565c0;
+}
+
+.btn-primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-secondary {
+  background: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #efefef;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.features-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.feature-item {
+  padding: 8px;
+  background: white;
+  border-left: 3px solid #1976d2;
+  font-size: 12px;
+  color: #555;
+}
+
+/* Leaflet overrides for mapping tool */
+.mapper-map .leaflet-control-zoom {
+  margin: 20px !important;
+}
+
+.mapper-map .leaflet-control-attribution {
+  bottom: 10px !important;
+  font-size: 11px;
+}

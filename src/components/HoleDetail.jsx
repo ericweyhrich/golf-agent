@@ -1,127 +1,130 @@
-import { useState } from 'react';
-import { GOLF_CLUBS, RED_TAIL_COURSE } from '../data/courseData';
+import { useState, useEffect, useRef } from 'react';
+import { RED_TAIL_COURSE } from '../data/courseData';
 import { useGPS } from '../hooks/useGPS';
+import InteractiveGolfMap from './InteractiveGolfMap';
+import ShotMarkerModal from './ShotMarkerModal';
+import { HoleMapModal } from './HoleMapModal';
+import HoleBoundaryMapper from './HoleBoundaryMapper';
 
-const SHOT_LIES = [
-  { base: 'Fairway', options: ['Fairway Center', 'Fairway Left', 'Fairway Right'] },
-  { base: 'Rough', options: ['Rough Left', 'Rough Right'] },
-  { base: 'Bunker', options: ['Bunker Left', 'Bunker Right'] },
-  { base: 'Green', options: ['Green'] },
-  { base: 'Water', options: ['Water'] },
-  { base: 'Out of Bounds', options: ['Out of Bounds Left', 'Out of Bounds Right'] },
-  { base: 'Lost Ball', options: ['Lost Ball Left', 'Lost Ball Right'] },
-];
-
-const getAllLies = () => {
-  return SHOT_LIES.flatMap(lie => lie.options);
-};
-
-export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate }) {
+export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate, allHoles, setup }) {
   const holeInfo = RED_TAIL_COURSE.holes.find(h => h.hole === hole);
-  const holeYardage = holeInfo?.[tee] || 0;
 
   // State management
   const [shots, setShots] = useState(holeData?.shots || []);
-  const [currentShotIndex, setCurrentShotIndex] = useState(0);
-  const [showContinueFinishModal, setShowContinueFinishModal] = useState(false);
+  const [showShotModal, setShowShotModal] = useState(false);
+  const [tapLocation, setTapLocation] = useState(null);
+  const [tapDistances, setTapDistances] = useState(null);
   const [showPuttsModal, setShowPuttsModal] = useState(false);
+  const [showHoleMapModal, setShowHoleMapModal] = useState(false);
   const [putts, setPutts] = useState('');
-  const [totalStrokes, setTotalStrokes] = useState('');
+  const [holeComplete, setHoleComplete] = useState(false);
+  const [showMapper, setShowMapper] = useState(false);
+  const [mappedFeatures, setMappedFeatures] = useState(holeData?.features || []);
+  const gpsPollingRef = useRef(null);
+  const [playerGPS, setPlayerGPS] = useState(null);
 
-  const currentShot = shots[currentShotIndex] || {};
-  const shotNumber = currentShotIndex + 1;
+  const gps = useGPS();
 
-  const gps = useGPS(
-    (distance) => {
-      updateCurrentShot('endGPS', distance);
-    },
-    (endPos) => {
-      updateCurrentShot('gpsLat', endPos.lat);
-      updateCurrentShot('gpsLon', endPos.lon);
-    },
-    (startPos) => {
-      updateCurrentShot('gpsStartLat', startPos.lat);
-      updateCurrentShot('gpsStartLon', startPos.lon);
-    }
-  );
+  // Sync mapped features when hole data changes
+  useEffect(() => {
+    setMappedFeatures(holeData?.features || []);
+  }, [holeData?.features]);
 
-  const updateCurrentShot = (field, value) => {
-    const newShots = [...shots];
-    if (!newShots[currentShotIndex]) {
-      newShots[currentShotIndex] = {};
-    }
-    newShots[currentShotIndex][field] = value;
+  // Auto-start GPS polling on component mount
+  useEffect(() => {
+    gps.startGPSPolling((position) => {
+      setPlayerGPS({
+        lat: position.latitude,
+        lng: position.longitude,
+      });
+    });
+
+    return () => {
+      gps.stopGPSPolling();
+    };
+  }, []);
+
+  const handleMapTap = (location) => {
+    setTapLocation(location);
+    setShowShotModal(true);
+  };
+
+  const handleYardageCalculated = (distances) => {
+    setTapDistances(distances);
+  };
+
+  const handleSaveShot = (shot) => {
+    const newShots = [...shots, shot];
     setShots(newShots);
-  };
-
-  const handleStartGPS = () => {
-    updateCurrentShot('gpsActive', true);
-    gps.startGPS();
-  };
-
-  const handleEndGPS = () => {
-    gps.endGPS();
-  };
-
-  const handleLieSelect = (lie) => {
-    updateCurrentShot('lie', lie);
-    setShowContinueFinishModal(true);
-  };
-
-  const handleContinueToNextShot = () => {
-    setShowContinueFinishModal(false);
-    setCurrentShotIndex(currentShotIndex + 1);
+    setShowShotModal(false);
+    setTapLocation(null);
+    setTapDistances(null);
   };
 
   const handleFinishHole = () => {
-    setShowContinueFinishModal(false);
+    gps.stopGPSPolling();
     setShowPuttsModal(true);
   };
 
   const handleSavePutts = () => {
-    const holesCompleted = shots.filter(s => s.lie).length;
-    const calculatedTotalStrokes = holesCompleted + (putts ? parseInt(putts) : 0);
+    const calculatedTotalStrokes = shots.length + (putts ? parseInt(putts) : 0);
 
-    setTotalStrokes(calculatedTotalStrokes);
-    onUpdate({
+    const holeUpdate = {
       hole,
       totalStrokes: calculatedTotalStrokes,
       putts: putts ? parseInt(putts) : 0,
-      penaltyStrokes: shots.filter(s =>
-        s.lie && (s.lie.includes('Water') || s.lie.includes('Out of Bounds') || s.lie.includes('Lost Ball'))
-      ).length,
-      shots: shots.filter(s => s.lie),
+      shots,
       score: calculatedTotalStrokes,
-    });
+    };
+
+    onUpdate(holeUpdate);
     setShowPuttsModal(false);
+    setHoleComplete(true);
+    setShowHoleMapModal(true);
   };
 
-  const getShotLabel = (index) => {
-    if (index === 0) return 'First Shot';
-    if (index === 1) return 'Second Shot';
-    if (index === 2) return 'Third Shot';
-    return `Shot ${index + 1}`;
+  const handleCloseHoleMap = () => {
+    setShowHoleMapModal(false);
+    setHoleComplete(false);
+    onNavigate(hole + 1);
   };
 
-  const getStartGPS = () => {
-    if (currentShotIndex === 0) return holeYardage;
-    return shots[currentShotIndex - 1]?.endGPS || null;
+  const handleSaveMapperFeatures = (features) => {
+    console.log('Mapped features for hole', hole, ':', features);
+    // Save features to state
+    setMappedFeatures(features);
+    // Also pass features to parent for persistence
+    onUpdate({
+      hole,
+      features,
+      shots: holeData?.shots || shots,
+      totalStrokes: holeData?.totalStrokes,
+      putts: holeData?.putts,
+      score: holeData?.score
+    });
+    setShowMapper(false);
   };
-
-  const par = holeInfo?.par || 0;
 
   return (
-    <div className="hole-detail">
+    <div className="hole-detail map-first-layout">
+      {/* Header with navigation & shot count */}
       <div className="detail-header">
         <button className="nav-btn" onClick={() => onNavigate(hole - 1)}>
           ← Prev
         </button>
-        <h2>Hole {hole}</h2>
+        <div className="hole-title">
+          <h2>Hole {hole}</h2>
+          <span className="shots-count">{shots.length} shot{shots.length !== 1 ? 's' : ''}</span>
+        </div>
         <button className="nav-btn" onClick={() => onNavigate(hole + 1)}>
           Next →
         </button>
+        <button className="btn-map-hole" onClick={() => setShowMapper(true)} title="Map hole boundaries">
+          📍 Map Hole
+        </button>
       </div>
 
+      {/* Hole info bar */}
       <div className="hole-info-bar">
         <div className="hole-info-item">
           <span className="label">Par</span>
@@ -137,133 +140,49 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate }) {
         </div>
       </div>
 
-      <div className="shots-section">
-        {/* Current Shot Card */}
-        <div className="shot-card active-shot">
-          <h3>{getShotLabel(currentShotIndex)}</h3>
-
-          <div className="shot-start-gps">
-            <span className="label">Start:</span>
-            <span className="value">{getStartGPS() !== null ? `${getStartGPS()} yards` : '—'}</span>
-          </div>
-
-          <div className="input-group">
-            <label htmlFor="shot-club">Club</label>
-            <select
-              id="shot-club"
-              value={currentShot.club || ''}
-              onChange={(e) => updateCurrentShot('club', e.target.value)}
-            >
-              <option value="">Select club...</option>
-              {GOLF_CLUBS.map(club => (
-                <option key={club} value={club}>{club}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="gps-controls">
-            {!currentShot.gpsActive && (currentShot.endGPS === undefined || currentShot.endGPS === null) ? (
-              <button
-                className="btn-gps btn-gps-start"
-                onClick={handleStartGPS}
-                disabled={gps.gpsLoading}
-              >
-                {gps.gpsLoading ? '⏳' : '📍'} Start GPS
-              </button>
-            ) : currentShot.gpsActive && (currentShot.endGPS === undefined || currentShot.endGPS === null) ? (
-              <>
-                <button
-                  className="btn-gps btn-gps-end"
-                  onClick={handleEndGPS}
-                  disabled={gps.gpsLoading}
-                >
-                  {gps.gpsLoading ? '⏳' : '📍'} End GPS
-                </button>
-                {currentShot.gpsStartLat && currentShot.gpsStartLon && (
-                  <div className="gps-coordinates">
-                    <p className="gps-label">📍 Start Position Locked:</p>
-                    <p className="gps-coords">
-                      Lat: {parseFloat(currentShot.gpsStartLat).toFixed(6)}<br />
-                      Lon: {parseFloat(currentShot.gpsStartLon).toFixed(6)}
-                    </p>
-                  </div>
-                )}
-              </>
-            ) : currentShot.endGPS !== undefined && currentShot.endGPS !== null ? (
-              <div className="gps-result">
-                <div>✅ Distance recorded: {currentShot.endGPS} yards away</div>
-                {currentShot.gpsStartLat && currentShot.gpsStartLon && currentShot.gpsLat && currentShot.gpsLon && (
-                  <div className="gps-coordinates">
-                    <p className="gps-label">📍 Start → End Coordinates:</p>
-                    <p className="gps-coords">
-                      Start: {parseFloat(currentShot.gpsStartLat).toFixed(6)}, {parseFloat(currentShot.gpsStartLon).toFixed(6)}<br />
-                      End: {parseFloat(currentShot.gpsLat).toFixed(6)}, {parseFloat(currentShot.gpsLon).toFixed(6)}
-                    </p>
-                  </div>
-                )}
-              </div>
-            ) : null}
-          </div>
-
-          {gps.gpsError && currentShot.gpsActive && (
-            <div className="gps-error">{gps.gpsError}</div>
-          )}
-
-          {/* Lie Selection - Shows only after GPS is complete */}
-          {currentShot.endGPS !== undefined && currentShot.endGPS !== null && !currentShot.lie && (
-            <div className="lie-selection">
-              <label>Where did it land?</label>
-              <div className="lie-buttons">
-                {getAllLies().map(lie => (
-                  <button
-                    key={lie}
-                    className="lie-btn"
-                    onClick={() => handleLieSelect(lie)}
-                  >
-                    {lie}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {currentShot.lie && (
-            <div className="shot-complete">
-              ✅ Club: {currentShot.club} | Distance: {currentShot.endGPS} yards | Lie: {currentShot.lie}
-            </div>
-          )}
-        </div>
-
-        {/* Previous Shots Summary */}
-        {shots.map((shot, idx) => (
-          idx < currentShotIndex && shot.lie && (
-            <div key={idx} className="shot-card completed-shot">
-              <h4>{getShotLabel(idx)}</h4>
-              <p>Club: {shot.club} | Distance: {shot.endGPS} yards | Lie: {shot.lie}</p>
-            </div>
-          )
-        ))}
+      {/* Interactive map - PRIMARY interface */}
+      <div className="map-section">
+        <InteractiveGolfMap
+          holeNumber={hole}
+          holeData={holeInfo}
+          playerGPS={playerGPS}
+          shots={shots}
+          courseGeoJSON={mappedFeatures.length > 0 ? { type: 'FeatureCollection', features: mappedFeatures } : null}
+          selectedTee={tee}
+          onTapLocation={handleMapTap}
+          onYardageCalculated={handleYardageCalculated}
+        />
       </div>
 
-      {/* Continue/Finish Modal */}
-      {showContinueFinishModal && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Shot Complete</h3>
-            <p>Continue to next shot or finish hole?</p>
-            <div className="modal-buttons">
-              <button className="btn btn-primary" onClick={handleContinueToNextShot}>
-                Continue Shot
-              </button>
-              <button className="btn btn-success" onClick={handleFinishHole}>
-                Finish Hole
-              </button>
+      {/* Shot summary at bottom */}
+      <div className="shots-summary">
+        <div className="shots-list">
+          {shots.map((shot, idx) => (
+            <div key={idx} className="shot-item">
+              <span className="shot-num">{idx + 1}</span>
+              <span className="shot-club">{shot.club}</span>
+              <span className="shot-lie">{shot.lie}</span>
             </div>
-          </div>
+          ))}
         </div>
+        {shots.length > 0 && (
+          <button className="btn-finish-hole" onClick={handleFinishHole}>
+            Finish Hole
+          </button>
+        )}
+      </div>
+
+      {/* Shot marker modal - appears on map tap */}
+      {showShotModal && tapLocation && (
+        <ShotMarkerModal
+          tapLocation={tapLocation}
+          distances={tapDistances}
+          onSave={handleSaveShot}
+          onCancel={() => setShowShotModal(false)}
+        />
       )}
 
-      {/* Putts Modal */}
+      {/* Putts modal */}
       {showPuttsModal && (
         <div className="modal-overlay">
           <div className="modal">
@@ -292,6 +211,26 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate }) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Hole map modal - post-hole summary */}
+      {showHoleMapModal && (
+        <HoleMapModal
+          holeNumber={hole}
+          holes={allHoles}
+          setup={setup}
+          onClose={handleCloseHoleMap}
+        />
+      )}
+
+      {/* Hole boundary mapper */}
+      {showMapper && (
+        <HoleBoundaryMapper
+          holeNumber={hole}
+          holeData={{ ...holeInfo, features: mappedFeatures }}
+          onSaveFeatures={handleSaveMapperFeatures}
+          onClose={() => setShowMapper(false)}
+        />
       )}
     </div>
   );

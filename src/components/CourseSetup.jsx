@@ -5,8 +5,9 @@ export function CourseSetup({ onStart }) {
   const weather = useWeather(RED_TAIL_COURSE.latitude, RED_TAIL_COURSE.longitude);
 
   const handleStartRound = (tee) => {
+    console.log('CourseSetup: handleStartRound called with tee:', tee);
     const now = new Date();
-    onStart({
+    const setupData = {
       tee,
       date: now.toISOString().split('T')[0],
       time: now.toLocaleTimeString('en-US', {
@@ -18,7 +19,15 @@ export function CourseSetup({ onStart }) {
       weather: weather.condition,
       temperature: weather.temperature,
       weatherData: weather,
-    });
+    };
+    console.log('CourseSetup: calling onStart with:', setupData);
+    console.log('CourseSetup: onStart is', typeof onStart);
+    try {
+      onStart(setupData);
+      console.log('CourseSetup: onStart called successfully');
+    } catch (e) {
+      console.error('CourseSetup: error calling onStart:', e);
+    }
   };
 
   return (

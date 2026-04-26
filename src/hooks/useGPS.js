@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 // Haversine formula to calculate distance between two points in yards
 export function calculateDistance(lat1, lon1, lat2, lon2) {
@@ -251,10 +251,50 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
     setGpsError(null);
   };
 
+  // Continuous GPS polling for map-first flow
+  const gpsPollingRef = useRef(null);
+
+  const startGPSPolling = (onPositionUpdate) => {
+    if (!navigator.geolocation) {
+      console.error('Geolocation not available');
+      return;
+    }
+
+    // Update position every 2-3 seconds for live tracking
+    gpsPollingRef.current = navigator.geolocation.watchPosition(
+      (position) => {
+        if (onPositionUpdate) {
+          onPositionUpdate({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy,
+          });
+        }
+      },
+      (error) => {
+        console.error('[GPS Polling] Error:', error);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  };
+
+  const stopGPSPolling = () => {
+    if (gpsPollingRef.current !== null) {
+      navigator.geolocation.clearWatch(gpsPollingRef.current);
+      gpsPollingRef.current = null;
+    }
+  };
+
   return {
     startGPS,
     endGPS,
     resetGPS,
+    startGPSPolling,
+    stopGPSPolling,
     gpsLoading,
     gpsError,
     hasStartPosition: !!startPosition,
