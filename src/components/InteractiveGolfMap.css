@@ -28,3 +28,56 @@
   font-family: monospace;
   z-index: 10;
 }
+
+.measurement-controls {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+
+.measurement-btn {
+  background: #2196F3;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.measurement-btn:hover {
+  background: #1976D2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.measurement-btn.active {
+  background: #FF5722;
+}
+
+.measurement-btn.active:hover {
+  background: #E64A19;
+}
+
+.measurement-reset-btn {
+  background: #FF9800;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.measurement-reset-btn:hover {
+  background: #E68900;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}

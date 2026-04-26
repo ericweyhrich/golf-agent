@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { calculateAllDistances } from '../utils/distanceCalculations';
+import { calculateAllDistances, calculateDistance } from '../utils/distanceCalculations';
 import { getHoleHazards } from '../data/hazardData';
 import './InteractiveGolfMap.css';
 
@@ -20,6 +20,11 @@ const InteractiveGolfMap = ({
   const shotMarkers = useRef([]);
   const shotPolyline = useRef(null);
   const hazardPolygons = useRef([]);
+  const [measurementMode, setMeasurementMode] = useState(false);
+  const [measurementPoints, setMeasurementPoints] = useState([]);
+  const measurementMarkers = useRef([]);
+  const measurementLine = useRef(null);
+  const measurementLabel = useRef(null);
 
   // Initialize map
   useEffect(() => {
@@ -43,15 +48,32 @@ const InteractiveGolfMap = ({
         streetViewControl: false,
         gestureHandling: 'greedy',
       });
+    };
 
-      // Add click listener for tap-to-yardage
-      map.current.addListener('click', (e) => {
-        const clickedLat = e.latLng.lat();
-        const clickedLng = e.latLng.lng();
+    initMap();
+  }, []); // Only initialize map once
 
-        const tapPos = { lat: clickedLat, lng: clickedLng };
+  // Handle click listener - re-register when measurement mode changes
+  useEffect(() => {
+    if (!map.current) return;
 
-        // Calculate distances from tap location
+    const handleMapClick = (e) => {
+      const clickedLat = e.latLng.lat();
+      const clickedLng = e.latLng.lng();
+      const tapPos = { lat: clickedLat, lng: clickedLng };
+
+      if (measurementMode) {
+        // In measurement mode, collect points for distance measurement
+        const newPoints = [...measurementPoints, tapPos];
+        setMeasurementPoints(newPoints);
+
+        if (newPoints.length === 2) {
+          // Calculate distance between the two points
+          const dist = calculateDistance(newPoints[0], newPoints[1]);
+          // Distance will be displayed in the useEffect below
+        }
+      } else {
+        // Normal mode: calculate distances from tap location
         const distances = calculateAllDistances(
           { lat: clickedLat, lng: clickedLng },
           holeData,
@@ -60,11 +82,15 @@ const InteractiveGolfMap = ({
 
         onTapLocation(tapPos);
         onYardageCalculated(distances);
-      });
+      }
     };
 
-    initMap();
-  }, []); // Only initialize once
+    const listener = map.current.addListener('click', handleMapClick);
+
+    return () => {
+      google.maps.event.removeListener(listener);
+    };
+  }, [measurementMode, measurementPoints, holeData, courseGeoJSON, onTapLocation, onYardageCalculated]);
 
   // Styling function for hazard features
   const getHazardStyle = (feature) => {
@@ -253,9 +279,87 @@ const InteractiveGolfMap = ({
     });
   }, [holeData, holeNumber]);
 
+  // Render measurement markers and line
+  useEffect(() => {
+    if (!map.current) return;
+
+    // Clear previous measurement markers
+    measurementMarkers.current.forEach((marker) => {
+      marker.setMap(null);
+    });
+    measurementMarkers.current = [];
+
+    // Clear previous measurement line
+    if (measurementLine.current) {
+      measurementLine.current.setMap(null);
+      measurementLine.current = null;
+    }
+
+    if (measurementPoints.length > 0) {
+      // Add marker for each measurement point
+      measurementPoints.forEach((point, idx) => {
+        const marker = new window.google.maps.Marker({
+          map: map.current,
+          position: point,
+          title: `Point ${idx + 1}`,
+          icon: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-' + (idx === 0 ? 'red' : 'orange') + '.png',
+        });
+        measurementMarkers.current.push(marker);
+      });
+
+      // If we have two points, draw a line and show distance
+      if (measurementPoints.length === 2) {
+        const dist = calculateDistance(measurementPoints[0], measurementPoints[1]);
+
+        measurementLine.current = new window.google.maps.Polyline({
+          map: map.current,
+          path: measurementPoints,
+          geodesic: true,
+          strokeColor: '#FF0000',
+          strokeOpacity: 0.8,
+          strokeWeight: 3,
+        });
+
+        // Add distance label at midpoint
+        const midLat = (measurementPoints[0].lat + measurementPoints[1].lat) / 2;
+        const midLng = (measurementPoints[0].lng + measurementPoints[1].lng) / 2;
+
+        const infoWindow = new window.google.maps.InfoWindow({
+          content: `<div style="font-weight: bold; font-size: 14px; color: #333;">${dist} yards</div>`,
+          position: { lat: midLat, lng: midLng },
+        });
+        infoWindow.open(map.current);
+      }
+    }
+  }, [measurementPoints, measurementMode]);
+
+  // Reset measurement when changing holes
+  useEffect(() => {
+    setMeasurementPoints([]);
+  }, [holeNumber]);
+
   return (
     <div className="interactive-golf-map">
       <div ref={mapContainer} className="map-container" />
+      <div className="measurement-controls">
+        <button
+          className={`measurement-btn ${measurementMode ? 'active' : ''}`}
+          onClick={() => {
+            setMeasurementMode(!measurementMode);
+            setMeasurementPoints([]);
+          }}
+        >
+          📐 {measurementMode ? 'Measuring' : 'Measure'}
+        </button>
+        {measurementMode && measurementPoints.length > 0 && (
+          <button
+            className="measurement-reset-btn"
+            onClick={() => setMeasurementPoints([])}
+          >
+            Clear
+          </button>
+        )}
+      </div>
     </div>
   );
 };
