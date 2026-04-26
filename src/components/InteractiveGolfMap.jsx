@@ -149,8 +149,13 @@ const InteractiveGolfMap = ({
       });
     });
 
-    // Fit map to hole boundary with padding
-    map.current.fitBounds(bounds, 50);
+    // Fit map to hole boundary with minimal padding and zoom in
+    map.current.fitBounds(bounds, 5);
+    // Zoom in more to fill the screen with just the hole outline
+    setTimeout(() => {
+      const currentZoom = map.current.getZoom();
+      map.current.setZoom(currentZoom + 2);
+    }, 100);
   }, [courseGeoJSON, holeNumber]);
 
   // Pan to hole location when hole data changes
