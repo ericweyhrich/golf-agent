@@ -20,6 +20,7 @@ const InteractiveGolfMap = ({
   const shotMarkers = useRef([]);
   const shotPolyline = useRef(null);
   const hazardPolygons = useRef([]);
+  const maskOverlay = useRef(null);
 
   // Initialize map
   useEffect(() => {
@@ -41,6 +42,7 @@ const InteractiveGolfMap = ({
         mapTypeId: window.google.maps.MapTypeId.SATELLITE,
         fullscreenControl: false,
         streetViewControl: false,
+        gestureHandling: 'greedy',
       });
 
       // Add click listener for tap-to-yardage
@@ -126,6 +128,58 @@ const InteractiveGolfMap = ({
 
       hazardPolygons.current.push(polygon);
     });
+  }, [courseGeoJSON, holeNumber]);
+
+  // Fit map to hole boundary and create masking overlay
+  useEffect(() => {
+    if (!map.current || !courseGeoJSON?.features) return;
+
+    const currentHoleFeatures = courseGeoJSON.features.filter(
+      feature => feature.properties.hole === holeNumber
+    );
+
+    if (currentHoleFeatures.length === 0) return;
+
+    // Remove previous mask
+    if (maskOverlay.current) {
+      maskOverlay.current.setMap(null);
+      maskOverlay.current = null;
+    }
+
+    // Calculate bounds from hole boundary
+    const bounds = new window.google.maps.LatLngBounds();
+    let holePath = [];
+
+    currentHoleFeatures.forEach(feature => {
+      const coords = feature.geometry.coordinates[0];
+      coords.forEach(([lng, lat]) => {
+        const latLng = new window.google.maps.LatLng(lat, lng);
+        bounds.extend(latLng);
+        holePath.push(latLng);
+      });
+    });
+
+    // Create mask overlay - large rectangle with hole cut out
+    const worldBounds = [
+      new window.google.maps.LatLng(85, -180),
+      new window.google.maps.LatLng(85, 180),
+      new window.google.maps.LatLng(-85, 180),
+      new window.google.maps.LatLng(-85, -180),
+    ];
+
+    if (holePath.length > 0) {
+      maskOverlay.current = new window.google.maps.Polygon({
+        map: map.current,
+        paths: [worldBounds, holePath],
+        fillColor: '#000000',
+        fillOpacity: 0.7,
+        strokeWeight: 0,
+        clickable: false,
+      });
+    }
+
+    // Fit map to hole boundary with padding
+    map.current.fitBounds(bounds, 50);
   }, [courseGeoJSON, holeNumber]);
 
   // Pan to hole location when hole data changes
