@@ -343,7 +343,7 @@ body {
   background: var(--bg-secondary);
   border-radius: 0;
   box-shadow: var(--shadow-lg);
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   flex-direction: column;
   border-top: 1px solid var(--border-color);
@@ -1278,20 +1278,37 @@ table td.even {
   .tracker-header {
     flex-direction: column;
     align-items: flex-start;
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  .tracker-header h2 {
+    font-size: 16px;
   }
 
   .header-stats {
     width: 100%;
+    gap: 10px;
+  }
+
+  .stat-badge {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .stat-badge .value {
+    font-size: 14px;
   }
 
   .live-weather {
-    font-size: 12px;
+    font-size: 11px;
   }
 
   .hole-grid {
-    grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
-    gap: 6px;
-    padding: 15px;
+    grid-template-columns: repeat(auto-fit, minmax(50px, 1fr));
+    gap: 4px;
+    padding: 8px 6px;
+    max-height: 120px;
   }
 
   .hole-detail {
