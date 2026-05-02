@@ -22,6 +22,7 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
   const [startPosition, setStartPosition] = useState(null);
   const [startTime, setStartTime] = useState(null);
   const [endPosition, setEndPosition] = useState(null);
+  const [currentPosition, setCurrentPosition] = useState(null);
 
   const startGPS = async () => {
     setGpsLoading(true);
@@ -254,6 +255,10 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
   // Continuous GPS polling for map-first flow
   const gpsPollingRef = useRef(null);
 
+  const getCurrentPosition = () => {
+    return currentPosition;
+  };
+
   const startGPSPolling = (onPositionUpdate) => {
     if (!navigator.geolocation) {
       console.error('Geolocation not available');
@@ -263,16 +268,19 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
     // Update position every 2-3 seconds for live tracking
     gpsPollingRef.current = navigator.geolocation.watchPosition(
       (position) => {
+        const posData = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+        };
+        setCurrentPosition(posData);
         if (onPositionUpdate) {
-          onPositionUpdate({
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            accuracy: position.coords.accuracy,
-          });
+          onPositionUpdate(posData);
         }
       },
       (error) => {
         console.error('[GPS Polling] Error:', error);
+        setGpsError('GPS error: ' + error.message);
       },
       {
         enableHighAccuracy: true,
@@ -295,6 +303,7 @@ export function useGPS(onDistanceCalculated, onEndPositionCaptured, onStartPosit
     resetGPS,
     startGPSPolling,
     stopGPSPolling,
+    getCurrentPosition,
     gpsLoading,
     gpsError,
     hasStartPosition: !!startPosition,

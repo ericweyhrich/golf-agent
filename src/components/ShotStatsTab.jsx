@@ -23,11 +23,13 @@ const ShotStatsTab = ({ shots, gps, holeData, holeNumber, onShotSave }) => {
         setStartLocation({ lat: position.latitude, lng: position.longitude });
         setIsRecording(true);
       } else {
-        alert('Unable to get GPS location. Please ensure location services are enabled.');
+        // GPS position not yet available
+        console.warn('[ShotStats] GPS position not available', { gpsError: gps.gpsError });
+        alert('GPS location not yet available. Please wait a moment and try again. Make sure:\n1. Location Services are enabled\n2. You\'re outdoors with clear sky view\n3. You\'ve granted location permission to this app');
       }
     } catch (error) {
       console.error('Error getting start location:', error);
-      alert('Error getting GPS location');
+      alert('Error getting GPS location: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -44,11 +46,12 @@ const ShotStatsTab = ({ shots, gps, holeData, holeNumber, onShotSave }) => {
         setShowForm(true);
         setIsRecording(false);
       } else {
-        alert('Unable to get GPS location. Please ensure location services are enabled.');
+        console.warn('[ShotStats] GPS position not available for end shot', { gpsError: gps.gpsError });
+        alert('GPS location not yet available. Please wait a moment and try again. Make sure location services are enabled and you have a clear view of the sky.');
       }
     } catch (error) {
       console.error('Error getting end location:', error);
-      alert('Error getting GPS location');
+      alert('Error getting GPS location: ' + (error.message || 'Unknown error'));
     }
   };
 
