@@ -86,18 +86,11 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate, allHoles
 
   return (
     <div className="hole-detail map-first-layout">
-      {/* Header with navigation & shot count */}
+      {/* Header - minimal, just hole number */}
       <div className="detail-header">
-        <button className="nav-btn" onClick={() => onNavigate(hole - 1)}>
-          ← Prev
-        </button>
         <div className="hole-title">
           <h2>Hole {hole}</h2>
-          <span className="shots-count">{shots.length} shot{shots.length !== 1 ? 's' : ''}</span>
         </div>
-        <button className="nav-btn" onClick={() => onNavigate(hole + 1)}>
-          Next →
-        </button>
       </div>
 
       {/* Hole info bar */}
@@ -122,13 +115,13 @@ export function HoleDetail({ hole, tee, holeData, onUpdate, onNavigate, allHoles
           className={`tab-btn ${activeTab === 'gps' ? 'active' : ''}`}
           onClick={() => setActiveTab('gps')}
         >
-          📍 GPS & Measurement
+          📍 GPS
         </button>
         <button
           className={`tab-btn ${activeTab === 'stats' ? 'active' : ''}`}
           onClick={() => setActiveTab('stats')}
         >
-          📊 Shot Tracking
+          📊 Shot Tracker
         </button>
         <button
           className={`tab-btn ${activeTab === 'round' ? 'active' : ''}`}

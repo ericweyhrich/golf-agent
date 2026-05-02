@@ -231,7 +231,7 @@ const InteractiveGolfMap = ({
           const midLat = (currentPoint.lat + nextPoint.lat) / 2;
           const midLng = (currentPoint.lng + nextPoint.lng) / 2;
           const label = new window.google.maps.InfoWindow({
-            content: `<div style="font-weight: bold; font-size: 14px; background: white; padding: 4px 8px; border-radius: 4px;">${distance} yds</div>`,
+            content: `<div style="font-weight: bold; font-size: 12px; background: white; padding: 3px 6px; border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,0.3);">${distance} yds</div>`,
             position: { lat: midLat, lng: midLng },
             disableAutoPan: true,
           });
@@ -259,7 +259,7 @@ const InteractiveGolfMap = ({
           const midLatGreen = (lastPoint.lat + holeData.greenLat) / 2;
           const midLngGreen = (lastPoint.lng + holeData.greenLon) / 2;
           const labelGreen = new window.google.maps.InfoWindow({
-            content: `<div style="font-weight: bold; font-size: 14px; background: white; padding: 4px 8px; border-radius: 4px;">${distToGreen} yds</div>`,
+            content: `<div style="font-weight: bold; font-size: 12px; background: white; padding: 3px 6px; border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,0.3);">${distToGreen} yds</div>`,
             position: { lat: midLatGreen, lng: midLngGreen },
             disableAutoPan: true,
           });

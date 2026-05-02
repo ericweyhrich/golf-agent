@@ -79,28 +79,26 @@ export function RoundTracker({ setup, onFinish }) {
         setup={setup}
       />
 
-      {/* Compact footer with hole grid and round info */}
+      {/* Compact footer with hole dropdown and round info */}
       <div className="round-tracker-footer">
-        {/* Scrollable hole grid */}
-        <div className="footer-hole-grid">
-          {RED_TAIL_COURSE.holes.map(hole => {
-            const data = holes[hole.hole];
-            const isCurrentHole = hole.hole === currentHole;
-            const score = data.score;
-            const vs_par = score ? score - hole.par : null;
-
-            return (
-              <button
-                key={hole.hole}
-                className={`footer-hole-btn ${isCurrentHole ? 'current' : ''} ${score ? 'completed' : ''}`}
-                onClick={() => handleNavigate(hole.hole)}
-                title={`Hole ${hole.hole}`}
-              >
-                <div className="footer-hole-num">{hole.hole}</div>
-                {score && <div style={{ fontSize: '8px' }}>{score}</div>}
-              </button>
-            );
-          })}
+        {/* Hole selector dropdown */}
+        <div className="footer-hole-selector">
+          <select
+            value={currentHole}
+            onChange={(e) => handleNavigate(parseInt(e.target.value))}
+            className="hole-dropdown"
+          >
+            {RED_TAIL_COURSE.holes.map(hole => {
+              const data = holes[hole.hole];
+              const score = data.score;
+              const label = `Hole ${hole.hole} (Par ${hole.par})${score ? ` - Score: ${score}` : ''}`;
+              return (
+                <option key={hole.hole} value={hole.hole}>
+                  {label}
+                </option>
+              );
+            })}
+          </select>
         </div>
 
         {/* Compact info bar with navigation and stats */}
